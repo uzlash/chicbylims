@@ -1,0 +1,641 @@
+"use client";
+import React, { useEffect, useState, useMemo } from "react";
+import Breadcrumb from "../Common/Breadcrumb";
+import Image from "next/image";
+import Newsletter from "../Common/Newsletter";
+import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
+import { useBrand } from "@/app/context/BrandContext";
+import { useAppSelector } from "@/redux/store";
+import { Product } from "@/types/product";
+import { useDispatch } from "react-redux";
+import { addItemToCart } from "@/redux/features/cart-slice";
+import { selectCartItems } from "@/redux/features/cart-slice";
+import type { CartItem } from "@/redux/features/cart-slice";
+import { addItemToWishlist, removeItemFromWishlist } from "@/redux/features/wishlist-slice";
+import { updateproductDetails } from "@/redux/features/product-details";
+import { formatPrice } from "@/lib/formatPrice";
+import { useCurrency } from "@/app/context/CurrencyContext";
+
+interface ShopDetailsProps {
+  product?: Product;
+  /** WhatsApp/contact number from site settings (brand). Used for "Order via WhatsApp" when set. */
+  siteContactPhone?: string | null;
+}
+
+const DEFAULT_DELIVERY = "24 hrs max within Abuja. Saturdays for interstate deliveries.";
+
+function cartQtyForVariant(cartItems: CartItem[], product: { id?: string | number; slug?: string; color?: string; size?: string }): number {
+  const id = product.id ?? product.slug;
+  if (id == null) return 0;
+  const item = cartItems.find(
+    (i) => (i.slug ? i.slug === product.slug : i.id === id) && (i.color ?? "") === (product.color ?? "") && (i.size ?? "") === (product.size ?? "")
+  );
+  return item?.quantity ?? 0;
+}
+
+const ShopDetails = ({ product: initialProduct, siteContactPhone }: ShopDetailsProps) => {
+  const { openPreviewModal } = usePreviewSlider();
+  const { brand } = useBrand();
+  const { toDisplayAmount, symbol, currency } = useCurrency();
+  const cartItems = useAppSelector(selectCartItems);
+  const [previewImg, setPreviewImg] = useState(0);
+  const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState("tabOne");
+
+  const [activeColorKey, setActiveColorKey] = useState(0);
+  const [activeSize, setActiveSize] = useState("");
+
+  // HEIM-style: size variant with individual price
+  const [activeSizeVariantIdx, setActiveSizeVariantIdx] = useState<number | null>(null);
+
+  // Fallback to Redux/LocalStorage if no product prop is provided (backward compatibility)
+  const alreadyExist = typeof window !== 'undefined' ? localStorage.getItem("productDetails") : null;
+  const productFromStorage = useAppSelector(
+    (state) => state.productDetailsReducer.value
+  );
+
+  const product = initialProduct || (alreadyExist ? JSON.parse(alreadyExist) : productFromStorage);
+
+  const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
+  const isWishlisted = product ? wishlistItems.some((i) => i.id === product.id) : false;
+
+  // Only use variants with a resolved color (guard against null refs)
+  const variantsWithColor = product?.colorVariants?.filter((v) => v?.color) ?? [];
+  const colorOptions = variantsWithColor.map((v) => v.color);
+  const availableSizes = variantsWithColor[activeColorKey]?.sizes ?? [];
+
+  const hasSizeVariants = (product?.sizeVariants?.length ?? 0) > 0;
+  const activeSizeVariant =
+    hasSizeVariants && activeSizeVariantIdx !== null
+      ? product!.sizeVariants![activeSizeVariantIdx]
+      : null;
+  const selectedColorName = colorOptions[activeColorKey]?.name ?? undefined;
+
+  // Cart-aware max quantity (same as AddToCartModal / QuickViewModal)
+  const payloadForCart = useMemo(() => {
+    if (!product) return null;
+    if (hasSizeVariants && activeSizeVariantIdx !== null) {
+      return { ...product, quantity: 1, size: product.sizeVariants![activeSizeVariantIdx].label, color: undefined as string | undefined };
+    }
+    return { ...product, quantity: 1, color: selectedColorName, size: activeSize || undefined };
+  }, [product, hasSizeVariants, activeSizeVariantIdx, selectedColorName, activeSize]);
+
+  const cartQty = payloadForCart ? cartQtyForVariant(cartItems, payloadForCart) : 0;
+  const rawStock = product?.stock as unknown as number | string | null | undefined;
+  const parsedStock =
+    rawStock === null || rawStock === undefined ? null : Number(rawStock);
+  const productStock =
+    parsedStock !== null && Number.isFinite(parsedStock) ? parsedStock : null;
+  const maxQuantity = productStock != null ? Math.max(0, productStock - cartQty) : null;
+  const atMax = maxQuantity != null ? quantity >= maxQuantity : false;
+
+  // Effective price for display and WhatsApp message
+  const effectivePrice = activeSizeVariant?.price ?? product?.discountedPrice ?? 0;
+  const effectiveComparePrice = activeSizeVariant?.comparePrice ?? product?.price ?? 0;
+
+  const deliveryText = product?.deliveryInfo ?? DEFAULT_DELIVERY;
+  const whatsappNumber = siteContactPhone?.trim();
+  const phoneDigits = whatsappNumber?.replace(/\D/g, "") ?? "";
+  const lineTotal = effectivePrice * quantity;
+  const orderMessage = product
+    ? `Hello! I'd like to order:\n${product.title}${activeSizeVariant ? ` (${activeSizeVariant.label})` : ""} x${quantity} — ${symbol}${formatPrice(toDisplayAmount(lineTotal), currency)}\n\nTotal: ${symbol}${formatPrice(toDisplayAmount(lineTotal), currency)}`
+    : "";
+  const whatsappLink =
+    phoneDigits && orderMessage
+      ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(orderMessage)}`
+      : null;
+
+  useEffect(() => {
+    if (product) {
+      if (!initialProduct) {
+        localStorage.setItem("productDetails", JSON.stringify(product));
+      }
+      dispatch(updateproductDetails(product));
+    }
+  }, [product, initialProduct, dispatch]);
+
+  // Clamp quantity to available stock (cart-aware) when product, cart, or selection changes
+  useEffect(() => {
+    if (maxQuantity != null && quantity > maxQuantity) {
+      setQuantity(maxQuantity);
+    }
+  }, [maxQuantity, quantity]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (maxQuantity != null && maxQuantity <= 0) return;
+    if (hasSizeVariants) {
+      dispatch(
+        addItemToCart({
+          ...product,
+          price: activeSizeVariant!.price,
+          discountedPrice: activeSizeVariant!.price,
+          quantity,
+          size: activeSizeVariant!.label,
+          color: undefined,
+          brandSlug: brand ?? undefined,
+        })
+      );
+    } else {
+      dispatch(
+        addItemToCart({
+          ...product,
+          quantity,
+          color: selectedColorName,
+          size: activeSize || undefined,
+          brandSlug: brand ?? undefined,
+        })
+      );
+    }
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!product) return;
+    if (isWishlisted) {
+      dispatch(removeItemFromWishlist(product.id));
+    } else {
+      dispatch(
+        addItemToWishlist({
+          ...product,
+          status: "available",
+          quantity: 1,
+        })
+      );
+    }
+  };
+
+  const tabs = [
+    { id: "tabOne", title: "Description" },
+    { id: "tabTwo", title: "Policy" },
+  ];
+
+  const handlePreviewSlider = () => {
+    if (!product) return;
+    const images = product.imgs?.previews?.length ? product.imgs.previews : (product.imgs?.thumbnails ?? []);
+    openPreviewModal({ images, initialIndex: previewImg, productTitle: product.title });
+  };
+
+  if (!product || !product.title) {
+    return (
+      <>
+        <Breadcrumb title={"Shop Details"} pages={["shop details"]} />
+        <div className="container mx-auto py-20 text-center">
+          <p>Product not found</p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Breadcrumb title={"Shop Details"} pages={["shop details"]} />
+
+      <>
+          <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28">
+            <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+              <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-17.5">
+                <div className="lg:max-w-[570px] w-full">
+                  <div className="lg:min-h-[512px] rounded-lg shadow-1 bg-gray-2 p-4 sm:p-7.5 relative flex items-center justify-center">
+                    <div>
+                      <button
+                        onClick={handlePreviewSlider}
+                        aria-label="Zoom product image"
+                        title="Zoom product image"
+                        className="gallery__Image w-11 h-11 rounded-[5px] bg-gray-1 shadow-1 flex items-center justify-center ease-out duration-200 text-dark hover:text-blue absolute top-4 lg:top-6 right-4 lg:right-6 z-50"
+                      >
+                        <svg
+                          className="fill-current"
+                          width="22"
+                          height="22"
+                          viewBox="0 0 22 22"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M9.11493 1.14581L9.16665 1.14581C9.54634 1.14581 9.85415 1.45362 9.85415 1.83331C9.85415 2.21301 9.54634 2.52081 9.16665 2.52081C7.41873 2.52081 6.17695 2.52227 5.23492 2.64893C4.31268 2.77292 3.78133 3.00545 3.39339 3.39339C3.00545 3.78133 2.77292 4.31268 2.64893 5.23492C2.52227 6.17695 2.52081 7.41873 2.52081 9.16665C2.52081 9.54634 2.21301 9.85415 1.83331 9.85415C1.45362 9.85415 1.14581 9.54634 1.14581 9.16665L1.14581 9.11493C1.1458 7.43032 1.14579 6.09599 1.28619 5.05171C1.43068 3.97699 1.73512 3.10712 2.42112 2.42112C3.10712 1.73512 3.97699 1.43068 5.05171 1.28619C6.09599 1.14579 7.43032 1.1458 9.11493 1.14581ZM16.765 2.64893C15.823 2.52227 14.5812 2.52081 12.8333 2.52081C12.4536 2.52081 12.1458 2.21301 12.1458 1.83331C12.1458 1.45362 12.4536 1.14581 12.8333 1.14581L12.885 1.14581C14.5696 1.1458 15.904 1.14579 16.9483 1.28619C18.023 1.43068 18.8928 1.73512 19.5788 2.42112C20.2648 3.10712 20.5693 3.97699 20.7138 5.05171C20.8542 6.09599 20.8542 7.43032 20.8541 9.11494V9.16665C20.8541 9.54634 20.5463 9.85415 20.1666 9.85415C19.787 9.85415 19.4791 9.54634 19.4791 9.16665C19.4791 7.41873 19.4777 6.17695 19.351 5.23492C19.227 4.31268 18.9945 3.78133 18.6066 3.39339C18.2186 3.00545 17.6873 2.77292 16.765 2.64893ZM1.83331 12.1458C2.21301 12.1458 2.52081 12.4536 2.52081 12.8333C2.52081 14.5812 2.52227 15.823 2.64893 16.765C2.77292 17.6873 3.00545 18.2186 3.39339 18.6066C3.78133 18.9945 4.31268 19.227 5.23492 19.351C6.17695 19.4777 7.41873 19.4791 9.16665 19.4791C9.54634 19.4791 9.85415 19.787 9.85415 20.1666C9.85415 20.5463 9.54634 20.8541 9.16665 20.8541H9.11494C7.43032 20.8542 6.09599 20.8542 5.05171 20.7138C3.97699 20.5693 3.10712 20.2648 2.42112 19.5788C1.73512 18.8928 1.43068 18.023 1.28619 16.9483C1.14579 15.904 1.1458 14.5696 1.14581 12.885L1.14581 12.8333C1.14581 12.4536 1.45362 12.1458 1.83331 12.1458ZM20.1666 12.1458C20.5463 12.1458 20.8541 12.4536 20.8541 12.8333V12.885C20.8542 14.5696 20.8542 15.904 20.7138 16.9483C20.5693 18.023 20.2648 18.8928 19.5788 19.5788C18.8928 20.2648 18.023 20.5693 16.9483 20.7138C15.904 20.8542 14.5696 20.8542 12.885 20.8541H12.8333C12.4536 20.8541 12.1458 20.5463 12.1458 20.1666C12.1458 19.787 12.4536 19.4791 12.8333 19.4791C14.5812 19.4791 15.823 19.4777 16.765 19.351C17.6873 19.227 18.2186 18.9945 18.6066 18.6066C18.9945 18.2186 19.227 17.6873 19.351 16.765C19.4777 15.823 19.4791 14.5812 19.4791 12.8333C19.4791 12.4536 19.787 12.1458 20.1666 12.1458Z"
+                            fill=""
+                          />
+                        </svg>
+                      </button>
+
+                      {product.imgs?.previews?.[previewImg] ? (
+                        <Image
+                          src={product.imgs.previews[previewImg]}
+                          alt="products-details"
+                          width={400}
+                          height={400}
+                          className="object-contain"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-[400px] h-[400px] bg-gray-2 text-gray-500">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ?  &apos;border-blue &apos; :  &apos;border-transparent&apos; */}
+                  <div className="flex flex-wrap sm:flex-nowrap gap-4.5 mt-6">
+                    {product.imgs?.thumbnails?.map((item, key) => (
+                      <button
+                        aria-label="Preview image"
+                        onClick={() => setPreviewImg(key)}
+                        key={key}
+                        className={`flex items-center justify-center w-15 sm:w-25 h-15 sm:h-25 overflow-hidden rounded-lg bg-gray-2 shadow-1 ease-out duration-200 border-2 hover:border-blue ${key === previewImg
+                          ? "border-blue"
+                          : "border-transparent"
+                          }`}
+                      >
+                        <Image
+                          width={50}
+                          height={50}
+                          src={item}
+                          alt="thumbnail"
+                          className="object-cover w-full h-full"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* <!-- product content --> */}
+                <div className="max-w-[539px] w-full">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-semibold text-xl sm:text-2xl xl:text-custom-3 text-dark">
+                      {product.title}
+                    </h2>
+
+                    {(product.price > product.discountedPrice) && (
+                      <div className="inline-flex font-medium text-custom-sm text-white bg-blue rounded py-0.5 px-2.5">
+                        Sale
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-5.5 mb-4.5">
+                    <div className="flex items-center gap-1.5">
+                      {maxQuantity != null && maxQuantity === 0 ? (
+                        <>
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden
+                          >
+                            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                            <path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
+                          <span className="text-gray-5">Out of stock</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden
+                          >
+                            <g clipPath="url(#clip0_375_9221)">
+                              <path
+                                d="M10 0.5625C4.78125 0.5625 0.5625 4.78125 0.5625 10C0.5625 15.2188 4.78125 19.4688 10 19.4688C15.2188 19.4688 19.4688 15.2188 19.4688 10C19.4688 4.78125 15.2188 0.5625 10 0.5625ZM10 18.0625C5.5625 18.0625 1.96875 14.4375 1.96875 10C1.96875 5.5625 5.5625 1.96875 10 1.96875C14.4375 1.96875 18.0625 5.59375 18.0625 10.0312C18.0625 14.4375 14.4375 18.0625 10 18.0625Z"
+                                fill="#22AD5C"
+                              />
+                              <path
+                                d="M12.6875 7.09374L8.9688 10.7187L7.2813 9.06249C7.00005 8.78124 6.56255 8.81249 6.2813 9.06249C6.00005 9.34374 6.0313 9.78124 6.2813 10.0625L8.2813 12C8.4688 12.1875 8.7188 12.2812 8.9688 12.2812C9.2188 12.2812 9.4688 12.1875 9.6563 12L13.6875 8.12499C13.9688 7.84374 13.9688 7.40624 13.6875 7.12499C13.4063 6.84374 12.9688 6.84374 12.6875 7.09374Z"
+                                fill="#22AD5C"
+                              />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_375_9221">
+                                <rect width="20" height="20" fill="white" />
+                              </clipPath>
+                            </defs>
+                          </svg>
+                          <span className="text-green">In Stock</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="font-medium text-custom-1 mb-4.5">
+                    <span className="text-sm sm:text-base text-dark">
+                      {symbol}{formatPrice(toDisplayAmount(effectivePrice), currency)}
+                    </span>
+                    {effectiveComparePrice > effectivePrice && (
+                      <span className="line-through text-dark-4 ml-2">
+                        {symbol}{formatPrice(toDisplayAmount(effectiveComparePrice), currency)}
+                      </span>
+                    )}
+                  </h3>
+
+                  <p className="text-custom-sm text-dark mb-4">
+                    <strong>Delivery:</strong> {deliveryText}
+                  </p>
+
+                  {whatsappLink && (
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 font-medium text-green hover:underline mb-4"
+                      title="Order via WhatsApp"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.387.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                      Order via WhatsApp
+                    </a>
+                  )}
+
+                  <form onSubmit={(e) => e.preventDefault()}>
+                    <div className="flex flex-col gap-4.5 border-y border-gray-3 mt-7.5 mb-9 py-9">
+                      {hasSizeVariants ? (
+                        /* HEIM-style: per-variant pricing */
+                        <div>
+                          <h4 className="font-medium text-dark mb-3">Select size / variant:</h4>
+                          <div className="flex flex-col gap-2">
+                            {product.sizeVariants!.map((sv, idx) => (
+                              <label
+                                key={idx}
+                                htmlFor={`sv-${idx}`}
+                                className={`cursor-pointer flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-colors ${
+                                  activeSizeVariantIdx === idx
+                                    ? "border-blue bg-blue/5"
+                                    : "border-gray-3 hover:border-blue"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="size-variant"
+                                  id={`sv-${idx}`}
+                                  className="sr-only"
+                                  checked={activeSizeVariantIdx === idx}
+                                  onChange={() => setActiveSizeVariantIdx(idx)}
+                                />
+                                <span className="text-sm font-medium text-dark">{sv.label}</span>
+                                <span className="text-sm font-semibold text-blue">
+                                  {symbol}{formatPrice(toDisplayAmount(sv.price), currency)}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {colorOptions.length > 0 && (
+                            <div className="flex items-center gap-4">
+                              <div className="min-w-[65px]">
+                                <h4 className="font-medium text-dark">Color:</h4>
+                              </div>
+                              <div className="flex items-center gap-2.5 flex-wrap">
+                                {colorOptions.map((color, key) => (
+                                  <label
+                                    key={key}
+                                    htmlFor={`color-${key}`}
+                                    className="cursor-pointer select-none flex items-center gap-1.5"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name="color"
+                                      id={`color-${key}`}
+                                      className="sr-only"
+                                      checked={activeColorKey === key}
+                                      onChange={() => {
+                                        setActiveColorKey(key);
+                                        setActiveSize("");
+                                      }}
+                                    />
+                                    <div
+                                      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${activeColorKey === key ? "border-blue" : "border-gray-3"}`}
+                                      style={{ backgroundColor: color?.value ?? "#eee" }}
+                                      title={color?.name}
+                                    />
+                                    <span className="text-custom-sm text-dark">{color?.name ?? "—"}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {availableSizes.length > 0 && (
+                            <div className="flex items-center gap-4">
+                              <div className="min-w-[65px]">
+                                <h4 className="font-medium text-dark">Size:</h4>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {availableSizes.map((size) => (
+                                  <label
+                                    key={size}
+                                    htmlFor={`size-${size}`}
+                                    className="flex cursor-pointer select-none items-center"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name="size"
+                                      id={`size-${size}`}
+                                      className="sr-only"
+                                      checked={activeSize === size}
+                                      onChange={() => setActiveSize(size)}
+                                    />
+                                    <span
+                                      className={`inline-flex items-center justify-center min-w-[2.5rem] py-2 px-3 rounded-md border text-custom-sm font-medium ${activeSize === size
+                                        ? "border-blue bg-blue text-white"
+                                        : "border-gray-3 text-dark hover:border-blue"
+                                        }`}
+                                    >
+                                      {size}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4.5">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center rounded-md border border-gray-3">
+                          <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            className="flex items-center justify-center w-12 h-12 ease-out duration-200 hover:text-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() =>
+                              quantity > 1 && setQuantity(quantity - 1)
+                            }
+                            disabled={quantity <= 1}
+                          >
+                            <svg
+                              className="fill-current"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M3.33301 10.0001C3.33301 9.53984 3.7061 9.16675 4.16634 9.16675H15.833C16.2932 9.16675 16.6663 9.53984 16.6663 10.0001C16.6663 10.4603 16.2932 10.8334 15.833 10.8334H4.16634C3.7061 10.8334 3.33301 10.4603 3.33301 10.0001Z"
+                                fill=""
+                              />
+                            </svg>
+                          </button>
+
+                          <span className="flex items-center justify-center w-16 h-12 border-x border-gray-4">
+                            {quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => (maxQuantity != null ? Math.min(maxQuantity, q + 1) : q + 1))}
+                            aria-label="Increase quantity"
+                            className="flex items-center justify-center w-12 h-12 ease-out duration-200 hover:text-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={atMax || (maxQuantity != null && maxQuantity <= 0)}
+                          >
+                          <svg
+                            className="fill-current"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3.33301 10C3.33301 9.5398 3.7061 9.16671 4.16634 9.16671H15.833C16.2932 9.16671 16.6663 9.5398 16.6663 10C16.6663 10.4603 16.2932 10.8334 15.833 10.8334H4.16634C3.7061 10.8334 3.33301 10.4603 3.33301 10Z"
+                              fill=""
+                            />
+                            <path
+                              d="M9.99967 16.6667C9.53944 16.6667 9.16634 16.2936 9.16634 15.8334L9.16634 4.16671C9.16634 3.70647 9.53944 3.33337 9.99967 3.33337C10.4599 3.33337 10.833 3.70647 10.833 4.16671L10.833 15.8334C10.833 16.2936 10.4599 16.6667 9.99967 16.6667Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                        </div>
+                        {maxQuantity != null && (
+                          <p className="text-custom-sm text-gray-5">
+                            {maxQuantity === 0
+                              ? "Out of stock"
+                              : `Max ${maxQuantity} available${cartQty > 0 ? ` (${cartQty} in cart)` : ""}`}
+                          </p>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (maxQuantity != null && maxQuantity <= 0) return;
+                          if (hasSizeVariants && activeSizeVariantIdx === null) return;
+                          handleAddToCart();
+                        }}
+                        disabled={
+                          (maxQuantity != null && maxQuantity <= 0) ||
+                          (hasSizeVariants && activeSizeVariantIdx === null)
+                        }
+                        className={`inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark ${
+                          (maxQuantity != null && maxQuantity <= 0) ||
+                          (hasSizeVariants && activeSizeVariantIdx === null)
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        {maxQuantity != null && maxQuantity <= 0
+                          ? "Out of stock"
+                          : hasSizeVariants && activeSizeVariantIdx === null
+                            ? "Choose a variant"
+                            : "Add to Cart"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleWishlistToggle}
+                        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                        className={`flex items-center justify-center w-12 h-12 rounded-md border ease-out duration-200 ${
+                          isWishlisted
+                            ? "border-pink bg-pink text-white hover:bg-pink/90"
+                            : "border-gray-3 hover:text-white hover:bg-dark hover:border-transparent"
+                        }`}
+                      >
+                        <svg
+                          className="fill-current"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M5.62436 4.42423C3.96537 5.18256 2.75 6.98626 2.75 9.13713C2.75 11.3345 3.64922 13.0283 4.93829 14.4798C6.00072 15.6761 7.28684 16.6677 8.54113 17.6346C8.83904 17.8643 9.13515 18.0926 9.42605 18.3219C9.95208 18.7366 10.4213 19.1006 10.8736 19.3649C11.3261 19.6293 11.6904 19.75 12 19.75C12.3096 19.75 12.6739 19.6293 13.1264 19.3649C13.5787 19.1006 14.0479 18.7366 14.574 18.3219C14.8649 18.0926 15.161 17.8643 15.4589 17.6346C16.7132 16.6677 17.9993 15.6761 19.0617 14.4798C20.3508 13.0283 21.25 11.3345 21.25 9.13713C21.25 6.98626 20.0346 5.18256 18.3756 4.42423C16.7639 3.68751 14.5983 3.88261 12.5404 6.02077C12.399 6.16766 12.2039 6.25067 12 6.25067C11.7961 6.25067 11.601 6.16766 11.4596 6.02077C9.40166 3.88261 7.23607 3.68751 5.62436 4.42423ZM12 4.45885C9.68795 2.39027 7.09896 2.1009 5.00076 3.05999C2.78471 4.07296 1.25 6.42506 1.25 9.13713C1.25 11.8027 2.3605 13.8361 3.81672 15.4758C4.98287 16.789 6.41022 17.888 7.67083 18.8586C7.95659 19.0786 8.23378 19.2921 8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.66C10.6739 20.9855 11.3096 21.25 12 21.25C12.6904 21.25 13.3261 20.9855 13.8832 20.66C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999C15.7662 19.2921 16.0434 19.0786 16.3292 18.8586C17.5898 17.888 19.0171 16.789 20.1833 15.4758C21.6395 13.8361 22.75 11.8027 22.75 9.13713C22.75 6.42506 21.2153 4.07296 18.9992 3.05999C16.901 2.1009 14.3121 2.39027 12 4.45885Z"
+                            fill=""
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="overflow-hidden bg-gray-2 py-20">
+            <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+              <div className="flex flex-wrap items-center bg-white rounded-[10px] shadow-1 gap-5 xl:gap-12.5 py-4.5 px-4 sm:px-6">
+                {tabs.map((item, key) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`font-medium lg:text-lg ease-out duration-200 hover:text-blue relative before:h-0.5 before:bg-blue before:absolute before:left-0 before:bottom-0 before:ease-out before:duration-200 hover:before:w-full ${activeTab === item.id
+                      ? "text-blue before:w-full"
+                      : "text-dark before:w-0"
+                      }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Description tab */}
+              <div className={`mt-12.5 ${activeTab === "tabOne" ? "block" : "hidden"}`}>
+                <div className="max-w-[670px] w-full rounded-xl bg-white shadow-1 p-4 sm:p-6">
+                  <h2 className="font-medium text-2xl text-dark mb-7">Description</h2>
+                  {product.description ? (
+                    <p className="text-dark whitespace-pre-line">{product.description}</p>
+                  ) : (
+                    <p className="text-dark-4">No description available.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Policy tab */}
+              <div className={`mt-12.5 ${activeTab === "tabTwo" ? "block" : "hidden"}`}>
+                <div className="max-w-[670px] w-full rounded-xl bg-white shadow-1 p-4 sm:p-6">
+                  <h2 className="font-medium text-2xl text-dark mb-7">Policy</h2>
+                  {product.policy ? (
+                    <p className="text-dark whitespace-pre-line">{product.policy}</p>
+                  ) : (
+                    <p className="text-dark-4">No policy information for this product.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Reviews tab removed - focus on testimonials */}
+            </div>
+          </section>
+
+          <Newsletter />
+        </>
+    </>
+  );
+};
+
+export default ShopDetails;
