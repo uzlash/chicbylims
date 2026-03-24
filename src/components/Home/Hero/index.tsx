@@ -21,7 +21,7 @@ const Hero = ({ carouselProducts = [], smallCard1 = null, smallCard2 = null, bra
   const brandPrefix = brand ? `/${brand}` : "";
 
   return (
-    <section className="overflow-hidden pb-10 lg:pb-12.5 xl:pb-15 pt-[132px] xl:pt-[140px] bg-[#F4E9F1]">
+    <section className="overflow-hidden pb-10 lg:pb-12.5 xl:pb-15 pt-[122px] sm:pt-[126px] md:pt-[130px] lg:pt-[134px] xl:pt-[172px] 2xl:pt-[178px] bg-[#F4E9F1]">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         <div className="flex flex-wrap gap-5">
           <div className="xl:max-w-[757px] w-full">
