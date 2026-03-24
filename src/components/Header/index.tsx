@@ -97,8 +97,38 @@ const Header = () => {
             />
           </Link>
 
-          {/* Mobile / tablet: icon-only account, cart, menu (same row as logo) */}
+          {/* Mobile / tablet: currency, icon-only account, cart, menu (same row as logo) */}
           <div className="order-2 ml-auto flex items-center gap-1.5 sm:gap-2 shrink-0 xl:hidden">
+            <div
+              className="inline-flex items-center rounded-full border border-gray-3 bg-white/90 px-0.5 py-0.5"
+              role="group"
+              aria-label="Currency"
+            >
+              <button
+                type="button"
+                onClick={() => setCurrency("NGN")}
+                className={`min-w-[1.625rem] px-1.5 py-0.5 text-2xs font-semibold rounded-full transition-colors ${
+                  currency === "NGN"
+                    ? "bg-blue text-white"
+                    : "text-dark-4 hover:bg-gray-1"
+                }`}
+                aria-label="Nigerian Naira"
+              >
+                ₦
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrency("USD")}
+                className={`min-w-[1.625rem] px-1.5 py-0.5 text-2xs font-semibold rounded-full transition-colors ${
+                  currency === "USD"
+                    ? "bg-blue text-white"
+                    : "text-dark-4 hover:bg-gray-1"
+                }`}
+                aria-label="US Dollar"
+              >
+                $
+              </button>
+            </div>
             {!session ? (
               <Link
                 href="/signin"

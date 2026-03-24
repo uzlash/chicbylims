@@ -1,9 +1,17 @@
 import React from "react";
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import AdminSidebar from "@/components/Admin/Sidebar";
 import AdminHeader from "@/components/Admin/Header";
+
+export const metadata: Metadata = {
+  icons: {
+    icon: "/chibylims_favicon.png",
+    apple: "/chibylims_favicon.png",
+  },
+};
 
 export default async function AdminLayout({
   children,
