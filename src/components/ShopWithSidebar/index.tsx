@@ -113,7 +113,7 @@ const ShopWithSidebar = ({ initialProducts, categories, colors, sizes, totalProd
         title={"Explore All Products"}
         pages={["Shop"]}
       />
-      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">
+      <section className="overflow-hidden relative pb-20 pt-3 lg:pt-10 xl:pt-14 bg-[#f3f4f6]">
         {/* Backdrop for mobile when filters open */}
         <div
           className={`xl:hidden fixed inset-0 z-[9998] bg-dark/40 transition-opacity ${
