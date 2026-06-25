@@ -110,10 +110,10 @@ const ShopWithSidebar = ({ initialProducts, categories, colors, sizes, totalProd
   return (
     <>
       <Breadcrumb
-        title={"Explore All Products"}
+        title={"Shop All"}
         pages={["Shop"]}
       />
-      <section className="overflow-hidden relative pb-20 pt-3 lg:pt-10 xl:pt-14 bg-[#f3f4f6]">
+      <section className="relative overflow-hidden pb-20 pt-10 xl:pt-14">
         {/* Backdrop for mobile when filters open */}
         <div
           className={`xl:hidden fixed inset-0 z-[9998] bg-dark/40 transition-opacity ${
@@ -122,7 +122,7 @@ const ShopWithSidebar = ({ initialProducts, categories, colors, sizes, totalProd
           aria-hidden
           onClick={() => setProductSidebar(false)}
         />
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+        <div className="section-container">
           <div className="flex gap-7.5">
             {/* <!-- Sidebar Start --> */}
             <div
@@ -167,10 +167,10 @@ const ShopWithSidebar = ({ initialProducts, categories, colors, sizes, totalProd
               <form onSubmit={(e) => e.preventDefault()}>
                 <div className="flex flex-col gap-6">
                   {/* <!-- filter box --> */}
-                  <div className="bg-white shadow-1 rounded-lg py-4 px-5">
+                  <div className="border border-cream-dark bg-white py-4 px-5">
                     <div className="flex items-center justify-between">
-                      <p>Filters:</p>
-                      <button onClick={handleClearAll} className={accentColor}>Clear All</button>
+                      <p className="text-custom-xs font-semibold uppercase tracking-[0.12em] text-dark">Filters</p>
+                      <button onClick={handleClearAll} className={`text-custom-sm ${accentColor}`}>Clear all</button>
                     </div>
                   </div>
 
@@ -213,7 +213,7 @@ const ShopWithSidebar = ({ initialProducts, categories, colors, sizes, totalProd
 
             {/* // <!-- Content Start --> */}
             <div className="xl:max-w-[870px] w-full">
-              <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
+              <div className="border border-cream-dark bg-white pl-3 pr-2.5 py-2.5 mb-6">
                 <div className="flex items-center justify-between">
                   {/* <!-- top bar left --> */}
                   <div className="flex flex-wrap items-center gap-4">

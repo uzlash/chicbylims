@@ -1,7 +1,6 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useCallback, useRef } from "react";
-import Image from "next/image";
 import { Testimonial } from "@/types/testimonial";
 
 // Import Swiper styles
@@ -26,25 +25,22 @@ const Testimonials = ({ testimonials }: { testimonials: Testimonial[] }) => {
   if (validTestimonials.length === 0) return null;
 
   return (
-    <section className="overflow-hidden pb-16.5">
-      <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+    <section className="overflow-hidden pt-20 xl:pt-28">
+      <div className="section-container">
         <div className="">
-          <div className="swiper testimonial-carousel common-carousel p-5">
+          <div className="swiper testimonial-carousel common-carousel">
             {/* <!-- section title --> */}
-            <div className="mb-10 flex items-center justify-between">
-              <div>
-                <span className="flex items-center gap-2.5 font-medium text-dark mb-1.5">
-                  <Image
-                    src="/images/icons/icon-08.svg"
-                    alt="icon"
-                    width={17}
-                    height={17}
-                  />
-                  WhatsApp reviews
+            <div className="mb-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+              <div className="flex flex-col items-center sm:items-start">
+                <span className="flex items-center gap-1 text-gold" aria-hidden>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} width="16" height="16" viewBox="0 0 24 24" className="fill-current">
+                      <path d="M12 2l2.95 5.98 6.6.96-4.77 4.65 1.13 6.57L12 17.98 6.09 20.16l1.13-6.57L2.45 8.94l6.6-.96L12 2z" />
+                    </svg>
+                  ))}
                 </span>
-                <h2 className="font-semibold text-xl xl:text-heading-5 text-dark">
-                  What our customers say
-                </h2>
+                <h2 className="heading-serif mt-3 text-display-3">Let customers speak for us</h2>
+                <p className="mt-2 text-custom-sm text-body">From 700+ happy customers</p>
               </div>
 
               <div className="flex items-center gap-3">

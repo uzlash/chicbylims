@@ -9,25 +9,16 @@ const Dropdown = ({ menuItem, stickyMenu }) => {
   return (
     <li
       onClick={() => setDropdownToggler(!dropdownToggler)}
-      className={`group relative before:w-0 before:h-[3px] before:bg-blue before:absolute before:left-0 before:top-0 before:rounded-b-[3px] before:ease-out before:duration-200 hover:before:w-full ${
-        pathUrl.includes(menuItem.title) && "before:!w-full"
-      }`}
+      className="group relative before:absolute before:left-0 before:top-0 before:h-[2px] before:w-0 before:rounded-b before:bg-blue before:duration-200 before:ease-out hover:before:w-full"
     >
-      <a
-        href="#"
-        className={`hover:text-blue text-custom-sm font-medium text-dark flex items-center gap-1.5 capitalize ${
-          stickyMenu ? "xl:py-4" : "xl:py-6"
-        } ${pathUrl.includes(menuItem.title) && "!text-blue"}`}
+      <Link
+        href={menuItem.path ?? "/"}
+        className={`flex items-center gap-1.5 text-custom-xs font-medium uppercase tracking-[0.16em] text-dark transition-colors hover:text-blue ${
+          stickyMenu ? "py-3.5" : "py-4"
+        }`}
       >
         {menuItem.title}
-        <svg
-          className="fill-current cursor-pointer"
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="fill-current" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path
             fillRule="evenodd"
             clipRule="evenodd"
@@ -35,23 +26,17 @@ const Dropdown = ({ menuItem, stickyMenu }) => {
             fill=""
           />
         </svg>
-      </a>
+      </Link>
 
-      {/* <!-- Dropdown Start --> */}
-      <ul
-        className={`dropdown ${dropdownToggler && "flex"} ${
-          stickyMenu
-            ? "xl:group-hover:translate-y-0"
-            : "xl:group-hover:translate-y-0"
-        }`}
-      >
+      {/* Dropdown */}
+      <ul className={`dropdown ${dropdownToggler ? "flex" : ""}`}>
         {menuItem.submenu.map((item, i) => (
           <li key={i}>
             <Link
               href={item.path}
-              className={`flex text-custom-sm hover:text-blue hover:bg-gray-1 py-[7px] px-4.5 ${
-                pathUrl === item.path && "text-blue bg-gray-1"
-              } `}
+              className={`flex px-4.5 py-[7px] text-custom-sm text-dark-3 transition-colors hover:bg-cream hover:text-blue ${
+                pathUrl === item.path ? "bg-cream text-blue" : ""
+              }`}
             >
               {item.title}
             </Link>

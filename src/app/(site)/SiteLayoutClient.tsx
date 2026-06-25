@@ -1,10 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Cormorant_Garamond } from "next/font/google";
 import "../css/euclid-circular-a-font.css";
 import "../css/style.css";
+
+const serif = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AnnouncementBar from "@/components/Common/AnnouncementBar";
+import Marquee from "@/components/Common/Marquee";
 
 import { ModalProvider } from "../context/QuickViewModalContext";
 import { AddToCartModalProvider } from "../context/AddToCartModalContext";
@@ -43,7 +54,11 @@ export default function SiteLayoutClient({
   }, []);
 
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html
+      lang="en"
+      className={serif.variable}
+      suppressHydrationWarning={true}
+    >
       <body>
         {loading ? (
           <PreLoader />
@@ -60,6 +75,8 @@ export default function SiteLayoutClient({
                         <ModalProvider>
                           <AddToCartModalProvider>
                             <PreviewSliderProvider>
+                              <AnnouncementBar />
+                              <Marquee />
                               <Header />
                               {children}
 

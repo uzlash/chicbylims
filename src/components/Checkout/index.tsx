@@ -191,8 +191,8 @@ const Checkout = () => {
       return (
         <>
           <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-          <section className="overflow-hidden py-20 bg-gray-2">
-            <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 text-center py-16">
+          <section className="overflow-hidden py-16 xl:py-20">
+            <div className="section-container py-16 text-center">
               <p className="text-xl font-medium text-dark">Redirecting to secure payment…</p>
               <p className="text-custom-sm text-dark-4 mt-2">Please wait — do not refresh this page.</p>
             </div>
@@ -203,14 +203,14 @@ const Checkout = () => {
     return (
       <>
         <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-        <section className="overflow-hidden py-20 bg-gray-2">
-          <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 text-center">
-            <h2 className="text-2xl font-medium mb-4">Your cart is empty</h2>
-            <p className="mb-8">Add some products to your cart to proceed to checkout.</p>
+        <section className="overflow-hidden py-16 xl:py-20">
+          <div className="section-container text-center">
+            <h2 className="heading-serif text-display-3 mb-4">Your cart is empty</h2>
+            <p className="mb-8 text-body">Add some products to your cart to proceed to checkout.</p>
             <button
               type="button"
               onClick={() => router.push("/shop")}
-              className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
+              className="btn-primary"
             >
               Return to Shop
             </button>
@@ -224,7 +224,7 @@ const Checkout = () => {
     <>
       <Breadcrumb title={"Checkout"} pages={["checkout"]} />
       <section className="overflow-hidden py-20 bg-gray-2">
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+        <div className="section-container">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               <div className="lg:max-w-[670px] w-full">
@@ -236,9 +236,9 @@ const Checkout = () => {
                   defaultEmail={session?.user?.email ?? undefined}
                 />
 
-                <div className="bg-white shadow-1 rounded-[10px] p-4 sm:p-8.5 mt-7.5">
+                <div className="border border-cream-dark bg-white p-4 sm:p-8.5 mt-7.5">
                   <div>
-                    <label htmlFor="notes" className="block mb-2.5">
+                    <label htmlFor="notes" className="block mb-2.5 text-custom-sm text-dark">
                       Delivery notes (optional)
                     </label>
                     <textarea
@@ -246,16 +246,16 @@ const Checkout = () => {
                       id="notes"
                       rows={3}
                       placeholder="Notes about your order, e.g. special instructions for delivery."
-                      className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full p-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                      className="w-full border border-cream-dark bg-white p-4 text-custom-sm text-dark outline-none duration-200 placeholder:text-dark-4 focus:border-dark"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="max-w-[455px] w-full">
-                <div className="bg-white shadow-1 rounded-[10px]">
-                  <div className="border-b border-gray-3 py-5 px-4 sm:px-8.5">
-                    <h3 className="font-medium text-xl text-dark">Your order</h3>
+                <div className="border border-cream-dark bg-white">
+                  <div className="border-b border-cream-dark py-5 px-4 sm:px-8.5">
+                    <h3 className="text-custom-xs font-semibold uppercase tracking-[0.14em] text-dark">Your order</h3>
                   </div>
 
                   <div className="px-4 sm:px-8.5 pt-4">
@@ -376,7 +376,7 @@ const Checkout = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5 disabled:opacity-50"
+                  className="btn-primary mt-7.5 w-full disabled:opacity-50"
                 >
                   {loading ? "Processing…" : "Place order"}
                 </button>

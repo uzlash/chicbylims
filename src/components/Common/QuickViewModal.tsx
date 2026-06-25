@@ -189,7 +189,7 @@ const QuickViewModal = () => {
                 SALE 20% OFF
               </span>
 
-              <h3 className="font-semibold text-xl xl:text-heading-5 text-dark mb-4">
+              <h3 className="heading-serif text-display-3 mb-4">
                 {product.title}
               </h3>
 
@@ -377,7 +377,7 @@ const QuickViewModal = () => {
                 <button
                   disabled={quantity === 0 || !canAdd}
                   onClick={() => handleAddToCart()}
-                  className={`inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {!canAdd && needsSize ? "Choose a size/variant" : "Add to Cart"}
                 </button>

@@ -3,27 +3,25 @@ import React from "react";
 
 const Breadcrumb = ({ title, pages }) => {
   return (
-    <div className="overflow-hidden shadow-breadcrumb pt-[122px] sm:pt-[126px] md:pt-[130px] lg:pt-[134px] xl:pt-[172px] 2xl:pt-[178px]">
-      <div className="border-t border-gray-3">
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 py-5 xl:py-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h1 className="font-semibold text-dark text-xl sm:text-2xl xl:text-custom-2">
-              {title}
-            </h1>
+    <div className="border-b border-cream-dark bg-cream">
+      <div className="section-container py-10 xl:py-14">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <ul className="flex items-center gap-1.5 text-custom-xs uppercase tracking-[0.16em] text-dark-4">
+            <li>
+              <Link href="/" className="transition-colors hover:text-blue">
+                Home
+              </Link>
+            </li>
+            {pages.length > 0 &&
+              pages.map((page, key) => (
+                <li key={key} className="flex items-center gap-1.5 capitalize last:text-dark">
+                  <span className="text-dark-5">/</span>
+                  {page}
+                </li>
+              ))}
+          </ul>
 
-            <ul className="flex items-center gap-2">
-              <li className="text-custom-sm hover:text-blue">
-                <Link href="/">Home /</Link>
-              </li>
-
-              {pages.length > 0 &&
-                pages.map((page, key) => (
-                  <li className="text-custom-sm last:text-blue capitalize" key={key}>
-                    {page} 
-                  </li>
-                ))}
-            </ul>
-          </div>
+          <h1 className="heading-serif text-display-3">{title}</h1>
         </div>
       </div>
     </div>

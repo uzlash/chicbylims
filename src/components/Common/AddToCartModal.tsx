@@ -288,7 +288,7 @@ const AddToCartModal = () => {
           type="button"
           onClick={handleAddToCart}
           disabled={!canAdd}
-          className="w-full py-3 px-4 rounded-md font-medium text-white bg-blue hover:bg-blue-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
         >
           {!canAdd
             ? hasSizeVariants

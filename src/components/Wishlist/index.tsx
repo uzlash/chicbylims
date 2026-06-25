@@ -17,14 +17,14 @@ export const Wishlist = () => {
   return (
     <>
       <Breadcrumb title={"Wishlist"} pages={["Wishlist"]} />
-      <section className="overflow-hidden py-20 bg-gray-2">
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+      <section className="overflow-hidden py-16 xl:py-20">
+        <div className="section-container">
           <div className="flex flex-wrap items-center justify-between gap-5 mb-7.5">
-            <h2 className="font-medium text-dark text-2xl">Your Wishlist</h2>
-            <button onClick={handleClearWishlist} className="text-blue">Clear Wishlist Cart</button>
+            <h2 className="heading-serif text-display-3">Your Wishlist</h2>
+            <button onClick={handleClearWishlist} className="text-custom-sm text-blue hover:underline">Clear wishlist</button>
           </div>
 
-          <div className="bg-white rounded-[10px] shadow-1">
+          <div className="border border-cream-dark bg-white">
             <div className="w-full overflow-x-auto">
               <div className="min-w-[1170px]">
                 {/* <!-- table header --> */}

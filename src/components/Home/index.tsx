@@ -4,13 +4,21 @@ import React from "react";
 import dynamic from "next/dynamic";
 import NewArrival from "./NewArrivals";
 import Featured from "./Featured";
-import PromoBanner from "./PromoBanner";
-import CounDown from "./Countdown";
-import Newsletter from "../Common/Newsletter";
+import CollectionBand from "./CollectionBand";
+import FeaturedShowcase from "./FeaturedShowcase";
+import BrandStatement from "./BrandStatement";
+import OurStory from "./OurStory";
+import InstagramFeed from "./InstagramFeed";
 
-const Hero = dynamic(() => import("./Hero"), { ssr: false, loading: () => <div className="min-h-[400px] bg-gray-1 animate-pulse" /> });
-const Categories = dynamic(() => import("./Categories"), { ssr: false, loading: () => <div className="min-h-[200px] bg-gray-1 animate-pulse" /> });
-const Testimonials = dynamic(() => import("./Testimonials"), { ssr: false, loading: () => <div className="min-h-[280px] bg-gray-1 animate-pulse" /> });
+const Hero = dynamic(() => import("./Hero"), {
+  ssr: false,
+  loading: () => <div className="min-h-[78vh] animate-pulse bg-cream" />,
+});
+const Testimonials = dynamic(() => import("./Testimonials"), {
+  ssr: false,
+  loading: () => <div className="min-h-[280px] animate-pulse bg-cream" />,
+});
+
 import { Product } from "@/types/product";
 import { Category } from "@/types/category";
 import { Testimonial } from "@/types/testimonial";
@@ -31,31 +39,44 @@ interface HomeProps {
   brand?: string;
 }
 
-const Home = ({ newArrivals, featured, categories, testimonials, heroCarousel = [], heroSmallCard1 = null, heroSmallCard2 = null, promoBig = null, promoMedium1 = null, promoMedium2 = null, countdownProduct = null, countdownDeadline = null, brand }: HomeProps) => {
+const firstImage = (...products: (Product | null | undefined)[]) => {
+  for (const p of products) {
+    const src = p?.imgs?.previews?.[0];
+    if (src) return src;
+  }
+  return null;
+};
+
+const Home = ({
+  newArrivals,
+  featured,
+  testimonials,
+  heroCarousel = [],
+  heroSmallCard1 = null,
+  promoBig = null,
+  countdownProduct = null,
+  brand,
+}: HomeProps) => {
+  const heroImage = firstImage(heroCarousel[0], featured[0], newArrivals[0]);
+  const collectionImage = firstImage(promoBig, featured[1], newArrivals[1], newArrivals[0]);
+  const showcaseProduct =
+    countdownProduct || featured.find((p) => p.productOfMonth) || featured[0] || newArrivals[0] || null;
+  const storyImage = firstImage(featured[2], newArrivals[2], heroSmallCard1, featured[0]);
+  const instagramImages = [...newArrivals, ...featured]
+    .map((p) => p?.imgs?.previews?.[0])
+    .filter(Boolean) as string[];
+
   return (
     <main>
-      <Hero
-        carouselProducts={heroCarousel}
-        smallCard1={heroSmallCard1}
-        smallCard2={heroSmallCard2}
-        brand={brand}
-      />
-      <Categories categories={categories} brand={brand} />
-      <Featured products={featured} brand={brand} />
+      <Hero carouselProducts={heroCarousel} smallCard1={heroSmallCard1} image={heroImage} brand={brand} />
+      <CollectionBand image={collectionImage} ctaHref={brand ? `/${brand}/shop` : "/shop"} />
       <NewArrival products={newArrivals} brand={brand} />
-      <PromoBanner
-        bigCard={promoBig}
-        mediumCard1={promoMedium1}
-        mediumCard2={promoMedium2}
-        brand={brand}
-      />
-      <CounDown
-        product={countdownProduct}
-        deadline={countdownDeadline}
-        brand={brand}
-      />
+      <FeaturedShowcase product={showcaseProduct} brand={brand} />
+      <Featured products={featured} brand={brand} />
+      <BrandStatement />
       <Testimonials testimonials={testimonials} />
-      <Newsletter />
+      <OurStory image={storyImage} ctaHref={brand ? `/${brand}/contact` : "/contact"} />
+      <InstagramFeed images={instagramImages} />
     </main>
   );
 };

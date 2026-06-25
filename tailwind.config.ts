@@ -12,6 +12,9 @@ const config: Config = {
   theme: {
     fontFamily: {
       "euclid-circular-a": ["Euclid Circular A"],
+      sans: ["Euclid Circular A", ...defaultTheme.fontFamily.sans],
+      serif: ["var(--font-serif)", "Cormorant Garamond", "Georgia", "serif"],
+      display: ["var(--font-serif)", "Cormorant Garamond", "Georgia", "serif"],
     },
     container: {
       center: true,
@@ -25,7 +28,28 @@ const config: Config = {
       current: "currentColor",
       transparent: "transparent",
       white: "#FFFFFF",
-      body: "#6C6F93",
+      body: "#5C5A55",
+      /** Editorial near-black ink for dark sections (announcement bar, Our Story) */
+      ink: {
+        DEFAULT: "#171717",
+        soft: "#262626",
+      },
+      /** Warm editorial canvases — let the prints supply the color */
+      cream: {
+        DEFAULT: "#F7F3EC",
+        dark: "#EFE7DA",
+      },
+      sand: "#EFE7DA",
+      /** Special CTA gold (use with ink text) — "SHOP NOW" style buttons */
+      gold: {
+        DEFAULT: "#C9A24B",
+        dark: "#B08A38",
+      },
+      /** Editorial green accent — section eyebrows ("NEW SUMMER COLLECTION") */
+      forest: {
+        DEFAULT: "#2F5D4B",
+        dark: "#244A3B",
+      },
       meta: {
         DEFAULT: "#F7F9FC",
         2: "#495270",
@@ -34,11 +58,11 @@ const config: Config = {
         5: "#BBBEC9",
       },
       dark: {
-        DEFAULT: "#1C274C",
-        2: "#495270",
-        3: "#606882",
-        4: "#8D93A5",
-        5: "#BBBEC9",
+        DEFAULT: "#1A1A1A",
+        2: "#2E2E2E",
+        3: "#4A4A4A",
+        4: "#8A8A8A",
+        5: "#BDBDBD",
       },
       gray: {
         DEFAULT: "#F3F5F6",
@@ -50,15 +74,19 @@ const config: Config = {
         6: "#6B7280",
         7: "#374151",
       },
-      /** Primary brand (Chicbylims): magenta — use `bg-blue`, `text-blue`, etc. */
+      /**
+       * Primary brand accent — repurposed to an editorial terracotta/clay so every
+       * existing `bg-blue`, `text-blue`, `hover:text-blue`, `before:bg-blue`, `fill-blue`
+       * usage flips to the new palette globally. (Token name kept as `blue` to avoid churn.)
+       */
       blue: {
-        DEFAULT: "#CD4298",
-        dark: "#A82D74",
-        light: "#D756A5",
-        "light-2": "#DF7AB8",
-        "light-3": "#E9A3CB",
-        "light-4": "#F3C9DE",
-        "light-5": "#FCECF4",
+        DEFAULT: "#B0542F",
+        dark: "#8F4426",
+        light: "#C47A5A",
+        "light-2": "#D49B83",
+        "light-3": "#E2BDAD",
+        "light-4": "#EFDED6",
+        "light-5": "#F8EFEA",
       },
       red: {
         DEFAULT: "#F23030",
@@ -112,6 +140,9 @@ const config: Config = {
     extend: {
       fontSize: {
         "2xs": ["10px", "17px"],
+        "display-1": ["clamp(2.75rem, 6vw, 5.25rem)", { lineHeight: "1.04", letterSpacing: "-0.01em" }],
+        "display-2": ["clamp(2.25rem, 4.5vw, 3.75rem)", { lineHeight: "1.06", letterSpacing: "-0.005em" }],
+        "display-3": ["clamp(1.75rem, 3vw, 2.75rem)", { lineHeight: "1.1" }],
         "heading-1": ["60px", "72px"],
         "heading-2": ["48px", "64px"],
         "heading-3": ["40px", "48px"],
@@ -247,7 +278,17 @@ const config: Config = {
           "0px 0px 1px 0px rgba(33, 37, 41, 0.08), 0px 2px 2px 0px rgba(33, 37, 41, 0.06)",
         filter: "0px 1px 0px 0px #E5E7EB",
         list: "1px 0px 0px 0px #E5E7EB",
-        input: "inset 0 0 0 2px #CD4298",
+        input: "inset 0 0 0 2px #B0542F",
+      },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+      },
+      animation: {
+        marquee: "marquee 30s linear infinite",
+        "marquee-fast": "marquee 18s linear infinite",
       },
     },
   },

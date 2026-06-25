@@ -57,8 +57,8 @@ const CartSidebarModal = () => {
         <div className="w-full max-w-[500px] shadow-1 bg-white px-4 sm:px-7.5 lg:px-11 relative modal-content">
           <div className="sticky top-0 bg-white pb-7 pt-4 sm:pt-7.5 lg:pt-11 border-b border-gray-3 mb-7.5">
             <div className="flex items-center justify-between">
-              <h2 className="font-medium text-dark text-lg sm:text-2xl">
-                Cart View
+              <h2 className="heading-serif text-2xl sm:text-3xl">
+                Your Cart
               </h2>
               <button
               onClick={() => closeCartModal()}
@@ -144,11 +144,11 @@ const CartSidebarModal = () => {
               <p className="font-medium text-xl text-dark">{symbol}{formatPrice(displayTotal, currency)}</p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 onClick={() => closeCartModal()}
                 href="/cart"
-                className="w-full flex justify-center font-medium text-white bg-blue py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-blue-dark"
+                className="btn-outline w-full"
               >
                 View Cart
               </Link>
@@ -156,7 +156,7 @@ const CartSidebarModal = () => {
               <Link
                 onClick={() => closeCartModal()}
                 href="/checkout"
-                className="w-full flex justify-center font-medium text-white bg-dark py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
+                className="btn-primary w-full"
               >
                 Checkout
               </Link>
