@@ -77,7 +77,7 @@ const Signup = () => {
               <h2 className="heading-serif text-display-3 mb-2">
                 Create an Account
               </h2>
-              <p className="text-custom-sm text-body">Join Chibylims — enter your details below</p>
+              <p className="text-custom-sm text-body">Join Chicbylims — enter your details below</p>
             </div>
 
             <div className="mt-5.5">

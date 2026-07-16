@@ -9,7 +9,7 @@ interface Props {
 
 const InstagramFeed = ({
   images = [],
-  handle = "@chibylims",
+  handle = "@chicbylims",
   href = "https://instagram.com",
 }: Props) => {
   const tiles = images.filter(Boolean).slice(0, 6);

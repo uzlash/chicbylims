@@ -13,7 +13,7 @@ interface CurrencyContextType {
   symbol: string;
 }
 
-const STORAGE_KEY = "chibylims-currency";
+const STORAGE_KEY = "chicbylims-currency";
 
 const CurrencyContext = createContext<CurrencyContextType>({
   currency: "NGN",

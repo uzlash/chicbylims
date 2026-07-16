@@ -11,7 +11,7 @@ interface Props {
 }
 
 const DEFAULT_BODY = [
-  "Chibylims was born from a love of authentic African design and a mission to bring bold, contemporary, ready-to-wear fashion to women everywhere.",
+  "Chicbylims was born from a love of authentic African design and a mission to bring bold, contemporary, ready-to-wear fashion to women everywhere.",
   "We blend traditional prints with modern silhouettes — every piece tells a story of heritage, confidence and effortless style.",
 ];
 

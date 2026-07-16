@@ -59,7 +59,7 @@ const Footer = () => {
               href="/"
               className="font-serif text-2xl font-semibold uppercase tracking-[0.25em] text-dark"
             >
-              Chibylims
+              Chicbylims
             </Link>
             <p className="mt-5 max-w-[340px] text-custom-sm leading-relaxed text-body">
               Authentic ready-to-wear African fashion — bold prints and premium fabrics
@@ -168,7 +168,7 @@ const Footer = () => {
       <div className="border-t border-cream-dark bg-cream">
         <div className="section-container flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
           <p className="text-2xs uppercase tracking-[0.14em] text-dark-4">
-            &copy; {year} Chibylims London. All rights reserved.
+            &copy; {year} Chicbylims London. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Image src="/images/payment/payment-01.svg" alt="Visa" width={50} height={18} />

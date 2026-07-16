@@ -140,10 +140,10 @@ const Header = () => {
           <div className="flex items-center justify-center">
             <Link
               href="/"
-              aria-label="Chibylims home"
+              aria-label="Chicbylims home"
               className="font-serif text-[26px] font-semibold uppercase leading-none tracking-[0.25em] text-dark sm:text-[30px] xl:text-[34px]"
             >
-              Chibylims
+              Chicbylims
             </Link>
           </div>
 

@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { formatPrice, type CurrencyCode } from "@/lib/formatPrice";
 
 export const metadata: Metadata = {
-  title: "Order Confirmation | Chibylims",
+  title: "Order Confirmation | Chicbylims",
   description: "Order Confirmation Page",
 };
 

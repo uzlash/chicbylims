@@ -17,7 +17,7 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Chibylims | Fabrics Store",
+  title: "Chicbylims | Ready to Wear Ankara",
   description: "Shop wax fabrics, lace and premium fabrics.",
 };
 

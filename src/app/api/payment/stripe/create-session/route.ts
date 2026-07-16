@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
             unit_amount: amountCents,
             product_data: {
               name: `Order ${orderNumber || orderId}`,
-              description: "Chibylims fabrics order",
+              description: "Chicbylims fabrics order",
             },
           },
           quantity: 1,
