@@ -3,7 +3,7 @@ import Checkout from "@/components/Checkout";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Checkout | NextCommerce",
+  title: "Checkout",
   description: "Complete your order",
 };
 

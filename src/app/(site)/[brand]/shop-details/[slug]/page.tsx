@@ -19,7 +19,7 @@ export async function generateMetadata(
   
   if (!sanityProduct) {
     return {
-      title: "Product Not Found | NextCommerce",
+      title: "Product Not Found",
     };
   }
 
@@ -28,8 +28,8 @@ export async function generateMetadata(
     : undefined;
 
   return {
-    title: `${sanityProduct.name} | NextCommerce`,
-    description: sanityProduct.description || `Buy ${sanityProduct.name} at NextCommerce`,
+    title: sanityProduct.name,
+    description: sanityProduct.description || `Buy ${sanityProduct.name} at Chicbylims.`,
     openGraph: ogImage ? { images: [ogImage] } : undefined,
   };
 }

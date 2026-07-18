@@ -1,7 +1,11 @@
+"use client";
 import React from "react";
 import Breadcrumb from "../Common/Breadcrumb";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 
 const Contact = () => {
+  const { contactPhone, contactEmail, address } = useSiteSettings();
+
   return (
     <>
       <Breadcrumb title={"Contact"} pages={["contact"]} />
@@ -33,7 +37,13 @@ const Contact = () => {
                         fill="#B0542F"
                       />
                     </svg>
-                    Name: James Septimus
+                    {contactEmail ? (
+                      <a href={`mailto:${contactEmail}`} className="transition-colors hover:text-blue">
+                        {contactEmail}
+                      </a>
+                    ) : (
+                      <span className="text-dark-4">Email coming soon</span>
+                    )}
                   </p>
 
                   <p className="flex items-center gap-4">
@@ -61,7 +71,18 @@ const Contact = () => {
                         fill="#B0542F"
                       />
                     </svg>
-                    Phone: 1234 567890
+                    {contactPhone ? (
+                      <a
+                        href={`https://wa.me/${contactPhone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors hover:text-blue"
+                      >
+                        {contactPhone}
+                      </a>
+                    ) : (
+                      <span className="text-dark-4">Phone coming soon</span>
+                    )}
                   </p>
 
                   <p className="flex gap-4">
@@ -80,7 +101,7 @@ const Contact = () => {
                         fill="#B0542F"
                       />
                     </svg>
-                    Address: 7398 Smoke Ranch RoadLas Vegas, Nevada 89128
+                    {address ?? <span className="text-dark-4">Address coming soon</span>}
                   </p>
                 </div>
               </div>

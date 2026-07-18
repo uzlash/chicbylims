@@ -5,8 +5,8 @@ import { sanityProductsToProducts, sanityCategoriesToCategories } from "@/lib/sa
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Shop Page | NextCommerce Nextjs E-commerce template",
-  description: "This is Shop Page for NextCommerce Template",
+  title: "Shop All",
+  description: "Shop authentic ready-to-wear Ankara, lace and premium fabrics.",
 };
 
 export const revalidate = 60;

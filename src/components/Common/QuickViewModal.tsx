@@ -185,9 +185,11 @@ const QuickViewModal = () => {
             </div>
 
             <div className="max-w-[445px] w-full">
-              <span className="inline-block text-custom-xs font-medium text-white py-1 px-3 bg-green mb-6.5">
-                SALE 20% OFF
-              </span>
+              {product.discountedPrice && product.discountedPrice < product.price ? (
+                <span className="mb-6.5 inline-block bg-blue px-3 py-1 text-custom-xs font-medium uppercase tracking-[0.12em] text-white">
+                  Sale — {Math.round(((product.price - product.discountedPrice) / product.price) * 100)}% off
+                </span>
+              ) : null}
 
               <h3 className="heading-serif text-display-3 mb-4">
                 {product.title}

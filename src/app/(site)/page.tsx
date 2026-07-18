@@ -17,8 +17,9 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Chicbylims | Ready to Wear Ankara",
-  description: "Shop wax fabrics, lace and premium fabrics.",
+  // Title intentionally omitted — inherits the site default from (site)/layout.tsx
+  description:
+    "Shop authentic ready-to-wear Ankara, lace and premium fabrics. Bold prints made for sunshine, moments and unforgettable escapes.",
 };
 
 export default async function HomePage() {

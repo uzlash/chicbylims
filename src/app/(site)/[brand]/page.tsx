@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : "Store";
 
   return {
-    title: `${brandName} | NextCommerce`,
+    title: brandName,
     description: `Shop ${brandName} products.`,
   };
 }
